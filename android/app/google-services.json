@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "196558868859",
+    "project_id": "dream11clone-67606",
+    "storage_bucket": "dream11clone-67606.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:196558868859:android:3d6fbccb13ba0678ad2dde",
+        "android_client_info": {
+          "package_name": "com.example.dream_11_clone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpKRgp5OqxEejy9e4PkZPZF-gBn5oB2go"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
