@@ -1,4 +1,3 @@
-import 'package:dream_11_clone/Ui/home_screen.dart';
 import 'package:dream_11_clone/Ui/signup_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -9,7 +8,11 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  late String _username, _password;
+
+  TextEditingController emailText = TextEditingController();
+  TextEditingController passText = TextEditingController();
+
+  bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -45,33 +48,30 @@ class _LoginScreenState extends State<LoginScreen> {
                       fillColor: Colors.white,
                       filled: true,
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a username or ID';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) => _username = value!,
                   ),
                 ),
                 SizedBox(height: 20),
                 Container(
                   width: screenWidth < 600 ? screenWidth * 0.9 : 400,
                   child: TextFormField(
+                    controller: passText,
+                    obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Password',
                       border: OutlineInputBorder(),
                       fillColor: Colors.white,
                       filled: true,
+                      suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _obscureText = !_obscureText;
+                              passText;
+                            });
+                          },
+                          icon: Icon(_obscureText
+                              ? Icons.visibility_off
+                              : Icons.visibility)),
                     ),
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) => _password = value!,
                   ),
                 ),
                 SizedBox(height: 30),
@@ -79,10 +79,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: screenWidth < 600 ? screenWidth * 0.9 : 200,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomePage()),
-                      );
+                      Navigator.pushReplacementNamed(
+                          context, '/home'); // Use named route for navigation
                     },
                     child: Text('Login'),
                     style: ElevatedButton.styleFrom(

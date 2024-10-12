@@ -140,6 +140,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           backgroundColor: Colors.red,
                         ),
                       );
+                      Navigator.pushReplacementNamed(context, '/login');
                     },
                     child: Text('Sign Up'),
                     style: ElevatedButton.styleFrom(
