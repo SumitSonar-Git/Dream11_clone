@@ -1,4 +1,7 @@
+import 'package:dream_11_clone/Ui/forgotpass_screen.dart';
 import 'package:dream_11_clone/Ui/signup_screen.dart';
+import 'package:dream_11_clone/firebase/firebase_Service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,7 +15,10 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController emailText = TextEditingController();
   TextEditingController passText = TextEditingController();
 
+// Firebase instance
+
   bool _obscureText = true;
+  String passSuggestion = '';
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +48,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   width: screenWidth < 600 ? screenWidth * 0.9 : 400,
                   child: TextFormField(
+                    controller: emailText,
                     decoration: InputDecoration(
                       labelText: 'Username/ID',
                       border: OutlineInputBorder(),
                       fillColor: Colors.white,
                       filled: true,
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your username';
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 SizedBox(height: 20),
@@ -55,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: screenWidth < 600 ? screenWidth * 0.9 : 400,
                   child: TextFormField(
                     controller: passText,
-                    obscureText: true,
+                    obscureText: _obscureText,
                     decoration: InputDecoration(
                       labelText: 'Password',
                       border: OutlineInputBorder(),
@@ -65,22 +78,59 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () {
                             setState(() {
                               _obscureText = !_obscureText;
-                              passText;
                             });
                           },
                           icon: Icon(_obscureText
                               ? Icons.visibility_off
                               : Icons.visibility)),
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      } else if (value.length < 6) {
+                        return 'Password must be at least 6 characters long';
+                      }
+                      return null;
+                    },
                   ),
                 ),
-                SizedBox(height: 30),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        passSuggestion,
+                        style: TextStyle(color: Colors.red),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ForgotpassScreen()));
+                        },
+                        child: Text(
+                          "Forgot password?",
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10),
                 Container(
                   width: screenWidth < 600 ? screenWidth * 0.9 : 200,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(
-                          context, '/home'); // Use named route for navigation
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        FirebaseService service = FirebaseService();
+                        await service.signInWithEmail(
+                            context, emailText.text, passText.text);
+                        // Form is valid, proceed to next screen or logic
+                      }
+
+                      // Use named route for navigation
                     },
                     child: Text('Login'),
                     style: ElevatedButton.styleFrom(

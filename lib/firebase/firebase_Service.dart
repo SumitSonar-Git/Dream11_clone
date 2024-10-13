@@ -24,20 +24,32 @@ class FirebaseService {
   Future<User?> signInWithEmail(
       BuildContext context, String email, String password) async {
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return userCredential.user;
-    } catch (e) {
+      // Firebase authentication for email and password
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      // If sign-in succeeds, navigate to home screen
+      Navigator.pushReplacementNamed(context, '/home');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Signin error: $e'),
+          content: Text('Logged-in successfully..'),
           backgroundColor: Colors.red,
         ),
       );
-      return null;
+    } on FirebaseAuthException catch (e) {
+      // Print the error code and message to help debug the issue
+
+      // Handling specific errors using error codes
+      if (e.code == 'invalid-credential') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Invalid ID or password, sign up instead.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
+    return null;
   }
 
   // Sign out user
@@ -50,68 +62,16 @@ class FirebaseService {
     return _auth.currentUser;
   }
 
-  Future<void> sendOTP(BuildContext context, String phoneNumber,
-      Function(String verificationId, int? resendToken) onCodeSent) async {
-    await _auth.verifyPhoneNumber(
-      phoneNumber: phoneNumber, // You missed adding this required parameter
-      timeout: const Duration(
-          seconds: 60), // Set a timeout for the verification process
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await _auth.signInWithCredential(credential);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Phone number automatically verified and user signed in: ${credential.smsCode}')),
-        );
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Phone verification failed: ${e.message}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        // This callback gets called when the OTP is sent successfully
-        onCodeSent(verificationId, resendToken);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('OTP sent to $phoneNumber')),
-        );
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('OTP retrieval timeout')),
-        );
-      },
-    );
-  }
-
-  Future<User?> verifyOTP(
-      BuildContext context, String verificationId, String smsCode) async {
+  Future<void> sendForgotPassMail(BuildContext context, String mail) async {
     try {
-      // Create a PhoneAuthCredential with the verificationId and smsCode
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: smsCode,
-      );
-      // Sign in with the credential
-      UserCredential userCredential =
-          await _auth.signInWithCredential(credential);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                'OTP verified successfully. Signed in as: ${userCredential.user?.phoneNumber}')),
-      );
-      return userCredential.user;
+      await _auth.sendPasswordResetEmail(email: mail);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('OTP verification error: ${e.toString()}'),
+          content: Text('Incorrect email: $e'),
           backgroundColor: Colors.red,
         ),
       );
-      return null;
     }
   }
 }

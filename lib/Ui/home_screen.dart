@@ -1,9 +1,58 @@
+import 'dart:io';
+
 import 'package:dream_11_clone/firebase/firebase_Service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   User? user = FirebaseAuth.instance.currentUser;
+
+  File? image;
+
+  Future<void> imagePick(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      setState(() {
+        image = File(pickedFile.path); // Update image and trigger rebuild
+      });
+    }
+  }
+
+  void showImagePicker(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) => Container(
+              height: 120,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.camera),
+                    title: Text("Camera"),
+                    onTap: () {
+                      Navigator.pop(context);
+                      imagePick(ImageSource.camera);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.photo_album),
+                    title: Text("Gallery"),
+                    onTap: () {
+                      Navigator.pop(context);
+                      imagePick(ImageSource.gallery);
+                    },
+                  ),
+                ],
+              ),
+            ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,46 +68,66 @@ class HomePage extends StatelessWidget {
           centerTitle: true,
         ),
         drawer: Container(
-          width: 300,
+          width: 250,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12), color: Colors.orange),
           child: Padding(
             padding: const EdgeInsets.only(top: 25, left: 10),
             child: Column(
               children: [
-                Container(
-                  decoration: BoxDecoration(
+                GestureDetector(
+                  onTap: () => showImagePicker(
+                      context), // Function to show options for camera/gallery
+                  child: Container(
+                    decoration: BoxDecoration(
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(12),
                           bottomLeft: Radius.circular(12)),
-                      color: Colors.white),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                            height: 50,
-                            width: 50,
-                            child: Image.asset("assets/images/men1.png")),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Text(user?.email ?? "Sumit Sonar"),
-                        SizedBox(
-                          width: 20,
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            FirebaseService service = FirebaseService();
-                            service.signOut();
-                            Navigator.pushReplacementNamed(context, '/login');
-                          },
-                          child: Text(
-                            "SignOut",
-                            style: TextStyle(color: Colors.black),
+                      color: Colors.white,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            height: 70,
+                            width: 60,
+                            child: image == null
+                                ? Image.asset(
+                                    "assets/images/men1.png") // Default image
+                                : Image.file(image!), // Show selected image
                           ),
-                        )
-                      ],
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Column(
+                            children: [
+                              Text(
+                                user?.email?.split('@')[0] ?? "Sumit Sonar",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  FirebaseService service = FirebaseService();
+                                  service.signOut();
+                                  Navigator.pushReplacementNamed(
+                                      context, '/login');
+                                },
+                                child: Text(
+                                  "SignOut",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
